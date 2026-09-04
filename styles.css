@@ -613,6 +613,20 @@ img{max-width:100%}
 .caveat{font-family:'Caveat',cursive;color:var(--green);font-size:26px;line-height:1.05;text-align:right;font-weight:700}
 .caveat .heart{display:block;font-size:22px}
 
+/* staff "you are looking at the customer's page" banner */
+.preview-bar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:10px var(--gutter);
+  background:var(--ink);color:#fff;
+  font-size:12.5px;
+}
+.preview-bar .link{color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.preview-bar span{color:rgba(255,255,255,.7)}
+
+.fb-stars-row{display:flex;align-items:center}
+.fb-star{font-size:20px;color:#D8D8D2;line-height:1}
+.fb-star.on{color:#F5B912}
+
 /* ---------- delivered / customer feedback ---------- */
 .cust-hero{
   background:var(--green-tint);

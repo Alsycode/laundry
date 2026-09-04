@@ -423,6 +423,13 @@
     return '<div class="empty"><div class="em">' + em + '</div><p>' + esc(text) + "</p></div>";
   }
 
+  // banner shown to STAFF above the customer-facing delivered / feedback pages
+  function previewBar(orderId) {
+    return '<div class="preview-bar">' +
+      '<button class="link" data-action="back-to-order" data-id="' + attr(orderId) + '">' + icon("back") + ' Back to order</button>' +
+      '<span>Customer preview — opens from the WhatsApp link</span></div>';
+  }
+
   /* ---------------------------------------------------------
      Screens
   --------------------------------------------------------- */
@@ -613,10 +620,10 @@
           '<input class="input input-h" id="f_name" type="text" placeholder="Customer name" value="' + attr(d.name) + '" data-action="draft-field" data-k="name"></div>' +
         '<div class="field"><label>Phone Number</label>' +
           '<div class="input-with-btn"><input class="input input-h" id="f_phone" type="tel" placeholder="+91 " value="' + attr(d.phone) + '" data-action="draft-field" data-k="phone">' +
-          '<button class="sidebtn" data-action="noop">' + icon("user") + '</button></div></div>' +
+          '<button class="sidebtn" data-action="contacts-hint" aria-label="Import from phone contacts" title="Import from phone contacts">' + icon("user") + '</button></div></div>' +
         '<div class="field"><label>Address</label>' +
           '<div class="input-with-btn"><textarea class="textarea" id="f_addr" placeholder="House / street / area" data-action="draft-field" data-k="address">' + esc(d.address) + '</textarea>' +
-          '<button class="sidebtn" data-action="noop">' + icon("location") + '</button></div></div>' +
+          '<button class="sidebtn" data-action="gps-hint" aria-label="Use current location" title="Use current location">' + icon("location") + '</button></div></div>' +
         '<button class="add-dashed mt16" data-action="new-customer">' + icon("plus") + ' Add to new customer</button>' +
       '</div>' +
       '<div class="action-bar"><button class="btn btn-primary" data-action="to-add-items">Next</button></div>' +
@@ -820,7 +827,33 @@
 
     var advanceBtn = NEXT_ACTION[o.status]
       ? '<button class="btn btn-primary" data-action="advance-status" data-id="' + o.id + '">' + NEXT_ACTION[o.status] + '</button>'
-      : '<button class="btn btn-outline-green" data-action="open-delivered" data-id="' + o.id + '">' + icon("star") + ' View delivery / feedback page</button>';
+      : "";
+
+    // delivered: feedback is a CUSTOMER action taken via a WhatsApp link — staff only see status + result
+    var feedbackBlock = "";
+    if (o.status === "delivered") {
+      var fb = o.feedback;
+      if (fb) {
+        var st = "";
+        for (var si = 1; si <= 5; si++) st += '<span class="fb-star' + (si <= fb.rating ? " on" : "") + '">★</span>';
+        feedbackBlock =
+          '<div class="card"><div class="mi-t" style="margin-bottom:8px">Customer feedback</div>' +
+          '<div class="fb-stars-row">' + st + '<span class="muted tiny" style="margin-left:8px">' + fb.rating + '/5</span></div>' +
+          (fb.text ? '<div class="ssvc" style="margin-top:8px">“' + esc(fb.text) + '”</div>' : "") +
+          (fb.at ? '<div class="muted tiny" style="margin-top:8px">Received ' + fmtDate(fb.at) + '</div>' : "") +
+          '</div>';
+      } else {
+        feedbackBlock =
+          '<div class="card">' +
+          '<div class="row" style="gap:10px;align-items:flex-start">' + icon("whatsapp") +
+          '<div class="grow"><div class="mi-t">Feedback request sent</div>' +
+          '<div class="mi-d">The customer got a WhatsApp message with a link to rate this order. Their rating shows here once they respond.</div></div></div>' +
+          '<div class="btn-row mt12">' +
+          '<button class="btn btn-secondary btn-sm" data-action="resend-feedback" data-id="' + o.id + '">' + icon("whatsapp") + ' Resend request</button>' +
+          '<button class="btn btn-secondary btn-sm" data-action="open-delivered" data-id="' + o.id + '">' + icon("star") + ' Preview link</button>' +
+          '</div></div>';
+      }
+    }
 
     return '<div class="screen">' +
       appBar("Order #" + o.id, { right: '<button class="iconbtn" data-action="noop">' + icon("more") + "</button>" }) +
@@ -845,7 +878,8 @@
         (paid ? "" : '<button class="btn btn-primary btn-sm" style="width:auto;padding:0 20px;margin-left:auto" data-action="open-payment" data-id="' + o.id + '">Mark as Paid</button>') +
       '</div>' +
       '<div class="pad stack mt16">' +
-        advanceBtn +
+        (advanceBtn ? advanceBtn : "") +
+        feedbackBlock +
         '<div class="btn-row"><button class="btn btn-secondary" data-action="edit-order" data-id="' + o.id + '">' + icon("edit") + ' Edit Order</button>' +
         '<button class="btn btn-secondary" data-action="open-invoice" data-id="' + o.id + '">' + icon("share") + ' Share Bill</button></div>' +
       '</div>' +
@@ -889,11 +923,12 @@
     '</div>';
   };
 
-  // ---- Delivered / customer-facing feedback entry ----
+  // ---- Delivered / customer-facing feedback entry (shown to staff as a PREVIEW of the customer's WhatsApp link) ----
   screens.delivered = function (p) {
     var o = orderById(p.id);
     var s = state.settings;
     return '<div class="screen flush">' +
+      previewBar(p.id) +
       '<div class="cust-hero"><img class="hero-photo" src="assets/branding/hero-towels.png" alt="" ' +
         'onerror="this.replaceWith(Object.assign(document.createElement(&quot;div&quot;),{className:&quot;em&quot;,textContent:&quot;🧺✨&quot;}))">' +
         '<h1>Your order has been delivered! 🎉</h1>' +
@@ -911,21 +946,22 @@
     '</div>';
   };
 
-  // ---- Feedback form ----
+  // ---- Feedback form (customer's page — staff see it as a preview) ----
   screens.feedbackForm = function (p) {
     var existing = state.feedback.filter(function (f) { return f.orderId === p.id; })[0];
     if (state.ui.feedbackDone) {
-      return '<div class="screen flush"><div class="cust-hero" style="min-height:60vh;display:flex;flex-direction:column;justify-content:center">' +
+      return '<div class="screen flush">' + previewBar(p.id) +
+        '<div class="cust-hero" style="min-height:55vh;display:flex;flex-direction:column;justify-content:center">' +
         '<div class="em">💚</div><h1>Thank you!</h1><p>Your feedback means a lot to us.</p>' +
-        '<div class="pad mt20"><button class="btn btn-primary" data-action="go-home">Back to Home</button></div>' +
+        '<div class="pad mt20"><button class="btn btn-primary" data-action="back-to-order" data-id="' + p.id + '">Back to Order #' + esc(p.id) + '</button></div>' +
       '</div></div>';
     }
     var rating = state.ui.feedbackRating || (existing ? existing.rating : 0);
     var stars = "";
     for (var i = 1; i <= 5; i++) stars += '<button class="' + (i <= rating ? "on" : "") + '" data-action="set-star" data-n="' + i + '">★</button>';
 
-    return '<div class="screen">' +
-      appBar("Feedback", {}) +
+    return '<div class="screen flush">' +
+      previewBar(p.id) +
       '<div class="pad stack">' +
         '<h2 class="center" style="font-size:20px;margin-top:10px">How was your experience?</h2>' +
         '<div class="stars">' + stars + '</div>' +
@@ -1449,6 +1485,14 @@
         return;
       }
       case "open-delivered": return navigate("delivered", { id: id });
+      case "back-to-order": { state.ui.feedbackDone = false; return navigate("orderDetail", { id: id }); }
+      case "resend-feedback": {
+        var rfo = orderById(id);
+        if (rfo) simulateWhatsApp(rfo, "delivered");
+        return;
+      }
+      case "contacts-hint": { toast("Phone-contacts import isn’t wired in this demo — use search or type it in"); return; }
+      case "gps-hint": { toast("📍 Current location captured (demo)"); return; }
       case "call-customer": { toast("Calling " + (el.getAttribute("data-phone") || "customer") + " …"); return; }
       case "wa-open": { whatsAppPreviewModal("Hi 👋  This is a WhatsApp chat with " + (el.getAttribute("data-phone") || "the customer") + "."); return; }
       case "wa-order": {
@@ -1481,7 +1525,7 @@
           text: (state.ui.feedbackText || "").trim(), at: Date.now()
         });
         var fo = orderById(id);
-        if (fo) fo.feedback = { rating: state.ui.feedbackRating, text: (state.ui.feedbackText || "").trim() };
+        if (fo) fo.feedback = { rating: state.ui.feedbackRating, text: (state.ui.feedbackText || "").trim(), at: Date.now() };
         persist();
         state.ui.feedbackDone = true;
         render();

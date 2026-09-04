@@ -121,10 +121,17 @@ multi-service per-garment configure. Manually tested end-to-end.**
 - [x] Order timeline (4 nodes + "Out for delivery" pill)
 - [x] Advance-status button with correct next label + notification
 - [x] Dashboard counts + order cards + detail stay in sync on status change
-- [x] Delivered customer-facing screen (hero, follow-us, tagline)
-- [x] Feedback form (interactive 1–5 stars + comment)
-- [x] "Thank you 💚" confirmation
-- [x] Feedback stored in state + localStorage, attached to the order
+- [x] **Feedback is a customer action, not staff:** on a delivered order the staff detail
+      shows "Feedback request sent" (with Resend + Preview link) until the customer responds,
+      then shows the received ★ rating + comment. The delivered / feedback screens carry a
+      dark "Customer preview — opens from the WhatsApp link" banner so staff know it's a
+      simulation of what the customer sees, not their own action.
+- [x] Delivered customer-facing screen (hero, follow-us, tagline) — preview only
+- [x] Feedback form (interactive 1–5 stars + comment) — preview only
+- [x] "Thank you 💚" → "Back to Order #N" (returns staff to the order)
+- [x] Feedback stored in state + localStorage, attached to the order, surfaced on the detail
+- [x] New Order contact / location side-buttons now labelled + explain themselves via toast
+      (`contacts-hint` / `gps-hint`) instead of being silent no-ops
 
 ### Management
 - [x] Customers screen + detail
