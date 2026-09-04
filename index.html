@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F6F5F2" />
+<title>FreshPress Laundry — Staff App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="device">
+    <div class="device-frame">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <span class="sb-right" aria-hidden="true">
+          <svg viewBox="0 0 18 12" width="18" height="12"><g fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="1" width="3" height="11" rx="1"/></g></svg>
+          <svg viewBox="0 0 18 13" width="18" height="13"><path fill="currentColor" d="M9 2.2c2.9 0 5.6 1.1 7.6 3l-1.5 1.6A8.6 8.6 0 0 0 9 4.5 8.6 8.6 0 0 0 2.9 6.8L1.4 5.2A11 11 0 0 1 9 2.2Zm0 4.1c1.8 0 3.4.7 4.6 1.8l-1.6 1.6A4.3 4.3 0 0 0 9 10.4c-1.1 0-2.1.4-2.9 1.1L4.5 9.9A6.5 6.5 0 0 1 9 6.3Zm0 4a2.2 2.2 0 1 1 0 4.4 2.2 2.2 0 0 1 0-4.4Z"/></svg>
+          <svg viewBox="0 0 26 13" width="26" height="13"><rect x="0.5" y="1" width="22" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="3" width="17" height="7" rx="1.5" fill="currentColor"/><rect x="23.5" y="4" width="2" height="5" rx="1" fill="currentColor"/></svg>
+        </span>
+      </div>
+      <div id="app" class="app"><!-- screens render here --></div>
+      <nav id="bottomNav" class="bottom-nav" hidden></nav>
+      <div id="sheetRoot"></div>
+      <div id="modalRoot"></div>
+      <div id="toastRoot" class="toast-root" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
